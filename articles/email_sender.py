@@ -117,16 +117,15 @@ class NewsEmailService:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>📰 Resumen Diario de Noticias</h1>
-                    <p>{datetime.now().strftime('%d de %B, %Y')}</p>
+                    <h1>📰 Daily News Summary</h1>
+                    <p>{datetime.now().strftime('%B %d, %Y')}</p>
                 </div>
                 <div class="content">
                     {self._create_stock_sections(summary_data)}
                 </div>
                 <div class="footer">
-                    <p>📈 Sistema de Análisis de Acciones</p>
-                    <p><small>Este es un mensaje automático. Para modificar tus preferencias, 
-                    ingresa a tu cuenta.</small></p>
+                    <p>📈 Stock Analytics System</p>
+                    <p><small>This is an automated message. To change your preferences, log in to your account.</small></p>
                 </div>
             </div>
         </body>
@@ -142,17 +141,14 @@ class NewsEmailService:
         for symbol, data in summary_data.items():
             count = data['count']
             articles = data['top_articles']
-            
             if count == 0:
                 continue
-            
             sections += f"""
             <div class="stock-section">
                 <div class="stock-title">
-                    {symbol} <span class="badge">{count} noticias</span>
+                    {symbol} <span class="badge">{count} news</span>
                 </div>
             """
-            
             for article in articles:
                 sections += f"""
                 <div class="article">
@@ -162,10 +158,8 @@ class NewsEmailService:
                     <div class="article-source">📰 {article['source']}</div>
                 </div>
                 """
-            
             sections += "</div>"
-        
-        return sections if sections else "<p>No hay noticias nuevas hoy.</p>"
+        return sections if sections else "<p>No new news today.</p>"
     
     def send_email(self, to_email, subject, html_body):
         """

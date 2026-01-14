@@ -35,27 +35,47 @@ class NewsScraperService:
         try:
             url = f"https://finance.yahoo.com/quote/{symbol}/news"
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': f'https://finance.yahoo.com/quote/{symbol}',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'same-origin',
+                'Sec-Fetch-User': '?1',
+                # Dummy cookie for browser-like behavior
+                'Cookie': 'GUCS=AXgAAg; yid=YF8AAg;'
             }
             
-            response = requests.get(url, headers=headers, timeout=10)
+
+            session = requests.Session()
+            session.headers.update(headers)
+            # Initial GET to Yahoo homepage to set cookies
+            try:
+                session.get('https://finance.yahoo.com', timeout=10)
+            except Exception:
+                pass
+
+            response = session.get(url, timeout=10)
             response.raise_for_status()
-            
+
             soup = BeautifulSoup(response.content, 'html.parser')
             articles = []
-            
+
             # Buscar elementos de noticias (la estructura puede variar)
             news_items = soup.find_all('h3', limit=10)
-            
+
             for item in news_items:
                 try:
                     title = item.get_text(strip=True)
                     link_elem = item.find_parent('a')
                     link = link_elem.get('href') if link_elem else None
-                    
+
                     if link and not link.startswith('http'):
                         link = f"https://finance.yahoo.com{link}"
-                    
+
                     article = {
                         'symbol': symbol,
                         'title': title,
@@ -64,51 +84,18 @@ class NewsScraperService:
                         'scraped_at': datetime.now(),
                         'published_date': datetime.now()  # Yahoo no siempre proporciona fecha exacta
                     }
-                    
+
                     articles.append(article)
-                    
+
                 except Exception as e:
                     logger.warning(f"Error parseando artículo: {e}")
                     continue
-            
+
             logger.info(f"Obtenidos {len(articles)} artículos para {symbol} de Yahoo Finance")
             return articles
             
         except Exception as e:
             logger.error(f"Error obteniendo noticias de Yahoo Finance para {symbol}: {e}")
-            return []
-    
-    def fetch_google_news(self, symbol, company_name):
-        """
-        Busca noticias en Google News
-        
-        Args:
-            symbol: Símbolo de la acción
-            company_name: Nombre de la compañía
-        
-        Returns:
-            Lista de artículos
-        """
-        try:
-            # Usar API de búsqueda de noticias (ejemplo simplificado)
-            search_query = f"{company_name} stock {symbol}"
-            url = f"https://news.google.com/search?q={search_query}&hl=en-US&gl=US&ceid=US:en"
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(url, headers=headers, timeout=10)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            articles = []
-            # Parsear noticias de Google News
-            # (La estructura real es más compleja y puede requerir APIs especializadas)
-            
-            return articles
-            
-        except Exception as e:
-            logger.error(f"Error obteniendo noticias de Google News: {e}")
             return []
     
     def filter_relevant_articles(self, articles, keywords=None):
@@ -127,20 +114,15 @@ class NewsScraperService:
                        'CEO', 'product', 'launch', 'innovation']
         
         filtered = []
-        
         for article in articles:
             title_lower = article['title'].lower()
-            
-            # Verificar si contiene alguna keyword relevante
-            if any(keyword.lower() in title_lower for keyword in keywords):
-                article['relevance_score'] = sum(
-                    1 for kw in keywords if kw.lower() in title_lower
-                )
-                filtered.append(article)
-        
+            # Calcular relevance_score si contiene keywords
+            article['relevance_score'] = sum(
+                1 for kw in keywords if kw.lower() in title_lower
+            )
+            filtered.append(article)
         # Ordenar por relevancia
         filtered.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
-        
         return filtered
     
     def save_articles(self, articles):
@@ -153,12 +135,14 @@ class NewsScraperService:
         saved_count = 0
         
         for article in articles:
+            # Filtrar artículos sin link válido
+            if not article.get('link'):
+                continue
             # Evitar duplicados por título y símbolo
             existing = self.articles_collection.find_one({
                 'symbol': article['symbol'],
                 'title': article['title']
             })
-            
             if not existing:
                 self.articles_collection.insert_one(article)
                 saved_count += 1
@@ -168,17 +152,6 @@ class NewsScraperService:
     def scrape_all_stocks(self):
         """Scrapea noticias para todas las acciones monitoreadas"""
         logger.info("Iniciando scraping de noticias...")
-        
-        # Mapeo de símbolos a nombres de compañías
-        company_names = {
-            'AAPL': 'Apple',
-            'GOOGL': 'Google Alphabet',
-            'MSFT': 'Microsoft',
-            'AMZN': 'Amazon',
-            'TSLA': 'Tesla',
-            'META': 'Meta Facebook',
-            'NVDA': 'NVIDIA'
-        }
         
         all_articles = []
         
@@ -192,11 +165,6 @@ class NewsScraperService:
                 
                 # Pequeña pausa para evitar rate limiting
                 time.sleep(2)
-                
-                # Google News (opcional)
-                # company_name = company_names.get(symbol, symbol)
-                # google_articles = self.fetch_google_news(symbol, company_name)
-                # all_articles.extend(google_articles)
                 
             except Exception as e:
                 logger.error(f"Error scrapeando {symbol}: {e}")

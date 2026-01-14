@@ -19,9 +19,7 @@ def main():
         logger.info("Paso 1: Scraping de noticias")
         scraper = NewsScraperService()
         
-        for symbol in Config.STOCKS:
-            logger.info(f"Buscando noticias para {symbol}")
-            scraper.scrape_all_sources(symbol)
+        scraper.scrape_all_stocks()
         
         scraper.close()
         logger.info("Scraping completado")
@@ -29,7 +27,7 @@ def main():
         # 2. Enviar emails
         logger.info("Paso 2: Enviando resúmenes por email")
         email_service = NewsEmailService()
-        email_service.send_daily_summary()
+        email_service.send_daily_summaries()
         email_service.close()
         
         logger.info("=== Proceso de noticias diarias completado ===")
