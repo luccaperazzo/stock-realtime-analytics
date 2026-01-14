@@ -1,7 +1,4 @@
-"""
-MongoDB Collections Setup and Indexes
-Ejecutar este script para crear las colecciones y índices necesarios
-"""
+
 from pymongo import MongoClient, ASCENDING, DESCENDING
 import sys
 import os
@@ -11,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.config import Config
 
 def setup_mongodb():
-    """Configura colecciones e índices en MongoDB"""
     
     client = MongoClient(Config.MONGO_URI)
     db = client[Config.MONGO_DB_NAME]

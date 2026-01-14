@@ -1,6 +1,4 @@
-"""
-Kafka Producer - Captura datos de acciones en tiempo real
-"""
+
 import json
 import time
 import sys
@@ -20,10 +18,10 @@ logger = setup_logger('kafka_producer')
 
 
 class StockProducer:
-    """Producer de Kafka para datos de acciones"""
+    
     
     def __init__(self):
-        """Inicializa el producer de Kafka"""
+        
         try:
             self.producer = KafkaProducer(
                 bootstrap_servers=Config.KAFKA_BOOTSTRAP_SERVERS,
@@ -36,15 +34,6 @@ class StockProducer:
             raise
     
     def fetch_stock_data(self, symbol):
-        """
-        Obtiene datos en tiempo real de una acción usando Alpha Vantage
-        
-        Args:
-            symbol: Símbolo de la acción (ej: 'AAPL')
-        
-        Returns:
-            Dict con datos de la acción
-        """
         try:
             # Obtener quote de Alpha Vantage
             url = f"https://www.alphavantage.co/query"
@@ -90,13 +79,6 @@ class StockProducer:
             return None
     
     def send_to_kafka(self, symbol, data):
-        """
-        Envía datos a Kafka topic
-        
-        Args:
-            symbol: Símbolo de la acción
-            data: Datos a enviar
-        """
         try:
             future = self.producer.send(
                 Config.KAFKA_TOPIC_STOCKS,
@@ -117,7 +99,6 @@ class StockProducer:
             logger.error(f"Error al enviar datos a Kafka: {e}")
     
     def run(self):
-        """Ejecuta el producer en loop continuo"""
         logger.info(f"Iniciando monitoreo de {len(Config.STOCKS_TO_MONITOR)} acciones")
         logger.info(f"Acciones: {', '.join(Config.STOCKS_TO_MONITOR)}")
         
@@ -144,7 +125,6 @@ class StockProducer:
             self.close()
     
     def close(self):
-        """Cierra el producer correctamente"""
         if self.producer:
             self.producer.flush()
             self.producer.close()
@@ -152,7 +132,6 @@ class StockProducer:
 
 
 def main():
-    """Función principal"""
     producer = StockProducer()
     producer.run()
 

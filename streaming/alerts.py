@@ -1,6 +1,4 @@
-"""
-Sistema de Alertas - Envía notificaciones por email cuando se detectan cambios significativos
-"""
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -13,10 +11,7 @@ logger = setup_logger('alerts_system')
 
 
 class AlertService:
-    """Servicio de alertas por email"""
-    
     def __init__(self):
-        """Inicializa el servicio de alertas"""
         self.smtp_config = Config.SMTP_CONFIG
         self.mongo_client = MongoClient(Config.MONGO_URI)
         self.db = self.mongo_client[Config.MONGO_DB_NAME]
@@ -25,15 +20,7 @@ class AlertService:
         logger.info("Alert service iniciado")
     
     def get_users_for_stock(self, symbol):
-        """
-        Obtiene usuarios suscritos a una acción específica
-        
-        Args:
-            symbol: Símbolo de la acción
-        
-        Returns:
-            Lista de usuarios
-        """
+ 
         users = self.users_collection.find({
             'subscribed_stocks': symbol,
             'alerts_enabled': True
@@ -42,17 +29,7 @@ class AlertService:
         return list(users)
     
     def send_email(self, to_email, subject, body):
-        """
-        Envía un email
-        
-        Args:
-            to_email: Email destinatario
-            subject: Asunto del email
-            body: Cuerpo del email (HTML)
-        
-        Returns:
-            bool: True si se envió correctamente
-        """
+
         try:
             msg = MIMEMultipart('alternative')
             msg['From'] = self.smtp_config['sender']
@@ -75,16 +52,6 @@ class AlertService:
             return False
     
     def create_alert_email(self, symbol, data):
-        """
-        Crea el HTML del email de alerta
-        
-        Args:
-            symbol: Símbolo de la acción
-            data: Datos de la alerta
-        
-        Returns:
-            str: HTML del email
-        """
         alert_type = data.get('alert_type', 'price_change')
         
         if alert_type == 'high_volume':
@@ -178,12 +145,7 @@ class AlertService:
         return html
     
     def process_alert(self, alert_data):
-        """
-        Procesa una alerta y envía notificaciones
-        
-        Args:
-            alert_data: Datos de la alerta desde MongoDB
-        """
+
         symbol = alert_data.get('symbol')
         alert_type = alert_data.get('alert_type', 'price_change')
         alert_reason = alert_data.get('alert_reason', '')
@@ -233,10 +195,6 @@ class AlertService:
                 )
     
     def monitor_alerts(self):
-        """
-        Monitorea continuamente las alertas en MongoDB
-        Usa change streams para procesamiento en tiempo real
-        """
         logger.info("Iniciando monitoreo de alertas...")
         
         try:
@@ -256,7 +214,6 @@ class AlertService:
 
 
 def main():
-    """Función principal"""
     alert_service = AlertService()
     alert_service.monitor_alerts()
 

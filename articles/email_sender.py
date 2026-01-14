@@ -1,6 +1,4 @@
-"""
-Email Sender - Envía resúmenes diarios de noticias a usuarios
-"""
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -14,10 +12,10 @@ logger = setup_logger('email_sender')
 
 
 class NewsEmailService:
-    """Servicio para enviar resúmenes de noticias por email"""
+    
     
     def __init__(self):
-        """Inicializa el servicio de emails"""
+        
         self.smtp_config = Config.SMTP_CONFIG
         self.mongo_client = MongoClient(Config.MONGO_URI)
         self.db = self.mongo_client[Config.MONGO_DB_NAME]
@@ -26,15 +24,6 @@ class NewsEmailService:
         logger.info("News Email Service iniciado")
     
     def create_news_summary_html(self, summary_data):
-        """
-        Crea HTML para el resumen de noticias
-        
-        Args:
-            summary_data: Datos del resumen
-        
-        Returns:
-            str: HTML del email
-        """
         html = f"""
         <html>
         <head>
@@ -135,7 +124,7 @@ class NewsEmailService:
         return html
     
     def _create_stock_sections(self, summary_data):
-        """Crea secciones HTML para cada acción"""
+        
         sections = ""
         
         for symbol, data in summary_data.items():
@@ -162,17 +151,7 @@ class NewsEmailService:
         return sections if sections else "<p>No new news today.</p>"
     
     def send_email(self, to_email, subject, html_body):
-        """
-        Envía un email
         
-        Args:
-            to_email: Email destinatario
-            subject: Asunto
-            html_body: Cuerpo HTML
-        
-        Returns:
-            bool: True si se envió correctamente
-        """
         try:
             msg = MIMEMultipart('alternative')
             msg['From'] = self.smtp_config['sender']
@@ -195,7 +174,7 @@ class NewsEmailService:
             return False
     
     def send_daily_summaries(self):
-        """Envía resúmenes diarios a todos los usuarios activos"""
+        
         logger.info("Enviando resúmenes diarios de noticias...")
         
         # Obtener resumen de noticias
@@ -238,14 +217,13 @@ class NewsEmailService:
         logger.info(f"Resúmenes enviados: {sent_count}, Fallidos: {failed_count}")
     
     def close(self):
-        """Cierra conexiones"""
+        
         self.mongo_client.close()
         self.scraper.close()
         logger.info("Conexiones cerradas")
 
 
 def main():
-    """Función principal"""
     email_service = NewsEmailService()
     
     try:

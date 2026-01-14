@@ -1,6 +1,4 @@
-"""
-Configuración centralizada del sistema
-"""
+
 import os
 from dotenv import load_dotenv
 
@@ -8,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    """Clase base de configuración"""
+    
     
     # Kafka
     KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
@@ -87,13 +85,11 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-    """Configuración para desarrollo"""
     DEBUG = True
     TESTING = False
 
 
 class ProductionConfig(Config):
-    """Configuración para producción"""
     DEBUG = False
     TESTING = False
     
@@ -103,7 +99,6 @@ class ProductionConfig(Config):
 
 
 class TestingConfig(Config):
-    """Configuración para testing"""
     DEBUG = True
     TESTING = True
     MONGO_DB_NAME = 'stock_market_test'
@@ -119,6 +114,5 @@ config_by_name = {
 }
 
 def get_config():
-    """Retorna la configuración según el entorno"""
     env = os.getenv('FLASK_ENV', 'development')
     return config_by_name.get(env, DevelopmentConfig)

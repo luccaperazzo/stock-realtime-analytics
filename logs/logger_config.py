@@ -1,6 +1,4 @@
-"""
-Sistema de logging centralizado con Elasticsearch
-"""
+
 import logging
 import sys
 from datetime import datetime
@@ -12,7 +10,6 @@ except ImportError:
 from config.config import Config
 
 class ElasticsearchHandler(logging.Handler):
-    """Handler para enviar logs a Elasticsearch"""
     
     def __init__(self, es_host, es_port, index_name):
         super().__init__()
@@ -20,7 +17,6 @@ class ElasticsearchHandler(logging.Handler):
         self.index_name = index_name
     
     def emit(self, record):
-        """Envía el log a Elasticsearch"""
         try:
             log_entry = {
                 'timestamp': datetime.utcnow().isoformat(),
@@ -46,16 +42,6 @@ class ElasticsearchHandler(logging.Handler):
 
 
 def setup_logger(name, log_level=None):
-    """
-    Configura un logger con handlers para consola y Elasticsearch
-    
-    Args:
-        name: Nombre del logger
-        log_level: Nivel de logging (default: INFO)
-    
-    Returns:
-        Logger configurado
-    """
     logger = logging.getLogger(name)
     
     if log_level:
@@ -99,15 +85,7 @@ def setup_logger(name, log_level=None):
 
 
 def log_with_context(logger, level, message, **context):
-    """
-    Log con contexto adicional
-    
-    Args:
-        logger: Logger instance
-        level: Nivel de log (INFO, WARNING, ERROR, etc.)
-        message: Mensaje del log
-        **context: Campos adicionales
-    """
+
     extra = {'extra_fields': context}
     getattr(logger, level.lower())(message, extra=extra)
 

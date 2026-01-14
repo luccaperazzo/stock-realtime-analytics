@@ -1,6 +1,4 @@
-"""
-Flask Web Application - Interfaz de usuario para el sistema
-"""
+
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
 from flask_cors import CORS
 from pymongo import MongoClient
@@ -27,13 +25,11 @@ mongo_db = mongo_client[Config.MONGO_DB_NAME]
 
 
 def get_mysql_connection():
-    """Crea conexión a MySQL"""
     return mysql.connector.connect(**Config.MYSQL_CONFIG)
 
 
 @app.route('/')
 def index():
-    """Página principal con precios en tiempo real"""
     try:
         # Obtener últimos precios de MongoDB
         realtime_collection = mongo_db[Config.MONGO_COLLECTION_REALTIME]
@@ -64,7 +60,7 @@ def index():
 
 @app.route('/api/stock/<symbol>')
 def get_stock_data(symbol):
-    """API endpoint para obtener datos de una acción"""
+    
     try:
         realtime_collection = mongo_db[Config.MONGO_COLLECTION_REALTIME]
         
@@ -83,7 +79,7 @@ def get_stock_data(symbol):
 
 @app.route('/api/historical/<symbol>')
 def get_historical_data(symbol):
-    """Obtiene datos históricos de MySQL"""
+    
     try:
         conn = get_mysql_connection()
         cursor = conn.cursor(dictionary=True)
@@ -116,7 +112,7 @@ def get_historical_data(symbol):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """Registro de nuevos usuarios"""
+    
     if request.method == 'POST':
         try:
             data = request.form
@@ -156,7 +152,7 @@ def register():
 
 @app.route('/dashboard/<symbol>')
 def dashboard(symbol):
-    """Dashboard detallado de una acción"""
+    
     try:
         # Obtener datos en tiempo real
         realtime_collection = mongo_db[Config.MONGO_COLLECTION_REALTIME]
@@ -183,7 +179,7 @@ def dashboard(symbol):
 
 @app.route('/api/realtime/<symbol>')
 def realtime_price(symbol):
-    """Endpoint para actualización en tiempo real (AJAX/WebSocket)"""
+    
     try:
         realtime_collection = mongo_db[Config.MONGO_COLLECTION_REALTIME]
         latest = realtime_collection.find_one(
@@ -200,7 +196,7 @@ def realtime_price(symbol):
 
 @app.route('/api/news')
 def get_all_news():
-    """Obtiene todas las noticias recientes"""
+    
     try:
         articles_collection = mongo_db[Config.MONGO_COLLECTION_ARTICLES]
         
@@ -220,13 +216,13 @@ def get_all_news():
 
 @app.errorhandler(404)
 def not_found(error):
-    """404 error page"""
+    
     return render_template('error.html', error='Page not found'), 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    """500 error page"""
+    
     logger.error(f"Error 500: {error}")
     return render_template('error.html', error='Internal server error'), 500
 

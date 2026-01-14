@@ -1,6 +1,4 @@
-"""
-Kafka Consumer - Procesa datos en tiempo real desde Kafka y guarda en MongoDB
-"""
+
 import json
 import sys
 import os
@@ -18,10 +16,10 @@ logger = setup_logger('kafka_consumer')
 
 
 class StockStreamConsumer:
-    """Consumer de Kafka para procesar datos de acciones"""
+    
     
     def __init__(self):
-        """Inicializa Kafka Consumer y MongoDB"""
+        
         try:
             # Inicializar Kafka Consumer
             self.consumer = KafkaConsumer(
@@ -46,12 +44,6 @@ class StockStreamConsumer:
             raise
     
     def process_message(self, message):
-        """
-        Procesa un mensaje de Kafka y lo guarda en MongoDB
-        
-        Args:
-            message: Mensaje de Kafka
-        """
         try:
             data = message.value
             
@@ -137,7 +129,6 @@ class StockStreamConsumer:
             logger.error(f"Error al procesar mensaje: {e}")
     
     def run(self):
-        """Ejecuta el consumer"""
         logger.info("Iniciando consumo de mensajes desde Kafka...")
         logger.info(f"Topic: {Config.KAFKA_TOPIC_STOCKS}")
         
@@ -156,7 +147,6 @@ class StockStreamConsumer:
 
 
 def main():
-    """Función principal"""
     logger.info("=== Stock Market Consumer ===")
     consumer = StockStreamConsumer()
     consumer.run()

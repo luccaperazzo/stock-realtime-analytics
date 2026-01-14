@@ -1,6 +1,4 @@
-"""
-News Scraper - Recopila noticias relacionadas con las acciones monitoreadas
-"""
+
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -13,25 +11,17 @@ logger = setup_logger('news_scraper')
 
 
 class NewsScraperService:
-    """Servicio para scrapear noticias de acciones"""
+    
     
     def __init__(self):
-        """Inicializa el servicio de noticias"""
+        
         self.mongo_client = MongoClient(Config.MONGO_URI)
         self.db = self.mongo_client[Config.MONGO_DB_NAME]
         self.articles_collection = self.db[Config.MONGO_COLLECTION_ARTICLES]
         logger.info("News Scraper iniciado")
     
     def fetch_yahoo_finance_news(self, symbol):
-        """
-        Obtiene noticias de Yahoo Finance para una acción
         
-        Args:
-            symbol: Símbolo de la acción
-        
-        Returns:
-            Lista de artículos
-        """
         try:
             url = f"https://finance.yahoo.com/quote/{symbol}/news"
             headers = {
@@ -99,16 +89,7 @@ class NewsScraperService:
             return []
     
     def filter_relevant_articles(self, articles, keywords=None):
-        """
-        Filtra artículos relevantes basado en keywords
         
-        Args:
-            articles: Lista de artículos
-            keywords: Lista de palabras clave
-        
-        Returns:
-            Lista de artículos filtrados
-        """
         if not keywords:
             keywords = ['earnings', 'revenue', 'profit', 'acquisition', 'merger', 
                        'CEO', 'product', 'launch', 'innovation']
@@ -126,12 +107,7 @@ class NewsScraperService:
         return filtered
     
     def save_articles(self, articles):
-        """
-        Guarda artículos en MongoDB (evitando duplicados)
         
-        Args:
-            articles: Lista de artículos
-        """
         saved_count = 0
         
         for article in articles:
@@ -150,7 +126,7 @@ class NewsScraperService:
         logger.info(f"Guardados {saved_count} artículos nuevos en MongoDB")
     
     def scrape_all_stocks(self):
-        """Scrapea noticias para todas las acciones monitoreadas"""
+        
         logger.info("Iniciando scraping de noticias...")
         
         all_articles = []
@@ -181,12 +157,7 @@ class NewsScraperService:
         return filtered_articles
     
     def get_daily_summary(self):
-        """
-        Genera un resumen de las noticias del día
         
-        Returns:
-            Dict con resumen por acción
-        """
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         
         summary = {}
@@ -212,13 +183,12 @@ class NewsScraperService:
         return summary
     
     def close(self):
-        """Cierra conexión a MongoDB"""
+        
         self.mongo_client.close()
         logger.info("Conexión cerrada")
 
 
 def main():
-    """Función principal"""
     scraper = NewsScraperService()
     
     try:

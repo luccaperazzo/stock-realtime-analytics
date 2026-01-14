@@ -1,6 +1,4 @@
-"""
-Procesamiento Batch Diario - Agrega datos del día y calcula métricas
-"""
+
 import sys
 import os
 
@@ -19,10 +17,10 @@ logger = setup_logger('daily_batch')
 
 
 class DailyAggregation:
-    """Procesamiento batch de datos diarios"""
+    
     
     def __init__(self):
-        """Inicializa conexiones a bases de datos"""
+        
         # MongoDB (fuente de datos en tiempo real)
         self.mongo_client = MongoClient(Config.MONGO_URI)
         self.mongo_db = self.mongo_client[Config.MONGO_DB_NAME]
@@ -35,15 +33,7 @@ class DailyAggregation:
         logger.info("DailyAggregation iniciado")
     
     def get_yesterday_data(self, symbol):
-        """
-        Obtiene todos los datos del día anterior para una acción
         
-        Args: 
-            symbol: Símbolo de la acción
-        
-        Returns:
-            DataFrame con los datos
-        """
         # Cambiar a hoy para pruebas (cambiar a -1 para producción)
         target_day = datetime.now() - timedelta(days=1)  # 0 = hoy, 1 = ayer
         start_of_day = target_day.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -70,15 +60,7 @@ class DailyAggregation:
         return df
     
     def calculate_daily_metrics(self, df):
-        """
-        Calcula métricas agregadas del día
         
-        Args:
-            df: DataFrame con datos del día
-        
-        Returns:
-            Dict con métricas calculadas
-        """
         metrics = {
             'avg_price': df['price'].mean(),
             'max_price': df['price'].max(),
@@ -99,16 +81,7 @@ class DailyAggregation:
         return metrics
     
     def calculate_technical_indicators(self, df, window=20):
-        """
-        Calcula indicadores técnicos básicos
         
-        Args:
-            df: DataFrame con datos históricos
-            window: Ventana para promedios móviles
-        
-        Returns:
-            Dict con indicadores
-        """
         indicators = {}
         
         # SMA - Simple Moving Average
@@ -130,15 +103,7 @@ class DailyAggregation:
         return indicators
     
     def save_to_mysql(self, symbol, date, metrics, indicators):
-        """
-        Guarda métricas agregadas en MySQL
         
-        Args:
-            symbol: Símbolo de la acción
-            date: Fecha de los datos
-            metrics: Métricas calculadas
-            indicators: Indicadores técnicos
-        """
         try:
             query = """
             INSERT INTO daily_aggregates 
@@ -198,7 +163,7 @@ class DailyAggregation:
             self.mysql_conn.rollback()
     
     def process_all_stocks(self):
-        """Procesa todas las acciones monitoreadas"""
+        
         yesterday = (datetime.now() - timedelta(days=1)).date()
         
         logger.info(f"Procesando datos del {yesterday}")
@@ -234,12 +199,7 @@ class DailyAggregation:
         logger.info("Procesamiento batch completado")
     
     def cleanup_old_data(self, days_to_keep=90):
-        """
-        Limpia datos antiguos de MongoDB
         
-        Args:
-            days_to_keep: Días de datos a mantener
-        """
         cutoff_date = datetime.now() - timedelta(days=days_to_keep)
         
         result = self.realtime_collection.delete_many({
@@ -249,7 +209,7 @@ class DailyAggregation:
         logger.info(f"Eliminados {result.deleted_count} registros antiguos de MongoDB")
     
     def close(self):
-        """Cierra conexiones a bases de datos"""
+        
         self.mongo_client.close()
         self.mysql_cursor.close()
         self.mysql_conn.close()
@@ -257,7 +217,6 @@ class DailyAggregation:
 
 
 def main():
-    """Función principal"""
     aggregator = DailyAggregation()
     
     try:
