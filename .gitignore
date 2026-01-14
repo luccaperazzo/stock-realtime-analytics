@@ -1,3 +1,6 @@
+# Ignorar archivos de documentación específicos
+FLUJO_DEL_SISTEMA.md
+DOCKER_GUIDE.md
 # Git ignore file
 # Python
 __pycache__/
