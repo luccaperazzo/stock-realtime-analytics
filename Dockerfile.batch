@@ -1,0 +1,35 @@
+# Dockerfile para Batch Processing con Cron
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar cron
+RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
+
+# Instalar dependencias Python
+COPY requirements-docker.txt .
+RUN pip install --no-cache-dir -r requirements-docker.txt
+
+# Copiar código
+COPY batch/ batch/
+COPY config/ config/
+COPY logs/ logs/
+COPY .env .
+
+# Variables de entorno
+ENV PYTHONPATH=/app
+
+# Crear archivo crontab
+RUN echo "0 0 * * * cd /app && python batch/daily_aggregation.py >> /var/log/cron.log 2>&1" > /etc/cron.d/batch-cron
+
+# Dar permisos al crontab
+RUN chmod 0644 /etc/cron.d/batch-cron
+
+# Aplicar crontab
+RUN crontab /etc/cron.d/batch-cron
+
+# Crear archivo de log
+RUN touch /var/log/cron.log
+
+# Comando de inicio: ejecutar cron en foreground y seguir el log
+CMD cron && tail -f /var/log/cron.log

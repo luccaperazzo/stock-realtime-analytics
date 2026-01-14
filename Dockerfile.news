@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+# Instalar cron
+RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de requisitos
+COPY requirements-docker.txt .
+
+# Instalar dependencias
+RUN pip install --no-cache-dir -r requirements-docker.txt
+
+# Copiar código de la aplicación
+COPY config/ ./config/
+COPY logs/ ./logs/
+COPY articles/ ./articles/
+
+# Configurar variable de entorno para Python
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Crear archivo de log para cron
+RUN touch /var/log/news_cron.log
+
+# Configurar cron job para las 08:00 AM diarias
+RUN echo "0 8 * * * cd /app && python articles/daily_news.py >> /var/log/news_cron.log 2>&1" | crontab -
+
+# Comando para iniciar cron
+CMD cron && tail -f /var/log/news_cron.log

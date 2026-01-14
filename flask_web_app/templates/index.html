@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Stock Market{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4"><i class="fas fa-chart-line"></i> Precios en Tiempo Real</h1>
+        <p class="lead">Monitoreo de acciones en tiempo real con alertas automáticas</p>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    {% for stock in stocks %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card stock-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="stock-symbol">{{ stock.symbol }}</span>
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-clock"></i> 
+                        {{ stock.timestamp.split('T')[1][:8] if 'T' in stock.timestamp else 'N/A' }}
+                    </span>
+                </div>
+                
+                <div class="stock-price {% if stock.change_pct > 0 %}price-up{% elif stock.change_pct < 0 %}price-down{% else %}price-neutral{% endif %}">
+                    ${{ "%.2f"|format(stock.price) }}
+                </div>
+                
+                <div class="mt-3">
+                    <span class="change-badge badge {% if stock.change_pct > 0 %}bg-success{% elif stock.change_pct < 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                        {% if stock.change_pct > 0 %}
+                            <i class="fas fa-arrow-up"></i> +{{ "%.2f"|format(stock.change_pct) }}%
+                        {% elif stock.change_pct < 0 %}
+                            <i class="fas fa-arrow-down"></i> {{ "%.2f"|format(stock.change_pct) }}%
+                        {% else %}
+                            {{ "%.2f"|format(stock.change_pct) }}%
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-chart-bar"></i> Volumen: {{ "{:,}".format(stock.volume) }}
+                    </small>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="/dashboard/{{ stock.symbol }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-chart-area"></i> Ver Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not stocks %}
+<div class="alert alert-warning text-center">
+    <i class="fas fa-exclamation-triangle"></i> No hay datos disponibles en este momento.
+</div>
+{% endif %}
+
+<div class="row mt-5">
+    <div class="col-12 text-center">
+        <div class="card">
+            <div class="card-body">
+                <h3><i class="fas fa-bell"></i> ¿Quieres recibir alertas?</h3>
+                <p>Regístrate para recibir notificaciones cuando tus acciones favoritas cambien significativamente</p>
+                <a href="/register" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Registrarse Ahora
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh cada 10 segundos
+setInterval(function() {
+    location.reload();
+}, 10000);
+</script>
+{% endblock %}

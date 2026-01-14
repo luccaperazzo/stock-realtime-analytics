@@ -1,0 +1,20 @@
+# Dockerfile para Consumer
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias Python
+COPY requirements-docker.txt .
+RUN pip install --no-cache-dir -r requirements-docker.txt
+
+# Copiar código
+COPY streaming/consumer.py streaming/
+COPY config/ config/
+COPY logs/ logs/
+COPY .env .
+
+# Variables de entorno
+ENV PYTHONPATH=/app
+
+# Comando de inicio
+CMD ["python", "streaming/consumer.py"]

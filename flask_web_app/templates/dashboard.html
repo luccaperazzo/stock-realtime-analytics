@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ symbol }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .news-item {
+        padding: 15px;
+        border-left: 4px solid #667eea;
+        margin-bottom: 15px;
+        background: white;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="/" class="btn btn-outline-secondary mb-3">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        <h1 class="display-4">{{ symbol }}</h1>
+    </div>
+</div>
+
+{% if latest %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="metric-label">Precio Actual</div>
+            <div class="metric-value {% if latest.price_change_pct > 0 %}price-up{% elif latest.price_change_pct < 0 %}price-down{% endif %}">
+                ${{ "%.2f"|format(latest.price) }}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="metric-label">Cambio Diario</div>
+            <div class="metric-value {% if latest.price_change_pct > 0 %}price-up{% elif latest.price_change_pct < 0 %}price-down{% endif %}">
+                {{ "%.2f"|format(latest.price_change_pct) }}%
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="metric-label">Volumen</div>
+            <div class="metric-value">
+                {{ "{:,}".format(latest.volume) }}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="metric-card">
+            <div class="metric-label">Rango</div>
+            <div class="metric-value" style="font-size: 1.2rem;">
+                ${{ "%.2f"|format(latest.low) }} - ${{ "%.2f"|format(latest.high) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-line"></i> Gráfico de Precio</h4>
+            </div>
+            <div class="card-body">
+                <canvas id="priceChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-newspaper"></i> Noticias Recientes</h4>
+            </div>
+            <div class="card-body">
+                {% if news %}
+                    {% for article in news %}
+                    <div class="news-item">
+                        <h5>
+                            <a href="{{ article.link }}" target="_blank" class="text-decoration-none">
+                                {{ article.title }}
+                            </a>
+                        </h5>
+                        <small class="text-muted">
+                            <i class="fas fa-source"></i> {{ article.source }} | 
+                            <i class="fas fa-clock"></i> {{ article.scraped_at.strftime('%d/%m/%Y %H:%M') if article.scraped_at else 'N/A' }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No hay noticias disponibles</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Cargar datos históricos y mostrar gráfico
+$(document).ready(function() {
+    fetch('/api/historical/{{ symbol }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const chartData = data.data.reverse();
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.map(d => d.date),
+                        datasets: [{
+                            label: 'Precio de Cierre',
+                            data: chartData.map(d => d.close_price),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
+            }
+        });
+});
+</script>
+{% endblock %}

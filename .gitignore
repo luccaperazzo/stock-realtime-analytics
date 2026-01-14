@@ -1,0 +1,69 @@
+# Git ignore file
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets/
+credentials/
+
+# Logs
+*.log
+logs/*.log
+airflow/logs/
+airflow/*.db
+airflow/*.pid
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+metastore_db/
+derby.log
+
+# Docker volumes (data persistente)
+mongodb_data/
+mysql_data/
+grafana_data/
+elasticsearch_data/
+
+# IDE
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+*.iml
+
+# Node
+node_modules/
+
+# Archives
+*.zip
+*.tar.gz
+
+# Airflow
+checkpoints/
+
+# Spark
+spark-warehouse/
+
+# Grafana provisioning (contiene contraseñas)
+grafana/provisioning/datasources/*.yml

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - Stock Market{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-user-plus"></i> Registro de Usuario</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="/register" id="registerForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre Completo *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <small class="form-text text-muted">
+                            Recibirás las alertas en este correo
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Acciones a Monitorear *</label>
+                        <div class="row">
+                            {% for stock in stocks %}
+                            <div class="col-6 col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="stocks" value="{{ stock }}" id="stock_{{ stock }}">
+                                    <label class="form-check-label" for="stock_{{ stock }}">
+                                        {{ stock }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <small class="form-text text-muted">
+                            Selecciona al menos una acción
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="threshold" class="form-label">
+                            Umbral de Alerta (%)
+                        </label>
+                        <input type="number" class="form-control" id="threshold" name="threshold" 
+                               value="5.0" step="0.1" min="0.1" max="50">
+                        <small class="form-text text-muted">
+                            Recibirás alertas cuando el precio cambie más de este porcentaje
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="news_summary" name="news_summary" checked>
+                            <label class="form-check-label" for="news_summary">
+                                Recibir resumen diario de noticias
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> Registrarse
+                        </button>
+                        <a href="/" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="fas fa-info-circle"></i> Características</h5>
+                <ul>
+                    <li><strong>Alertas en Tiempo Real:</strong> Recibe emails cuando tus acciones cambien significativamente</li>
+                    <li><strong>Resumen Diario:</strong> Noticias relevantes de tus acciones favoritas</li>
+                    <li><strong>Umbrales Personalizables:</strong> Configura cuándo quieres ser notificado</li>
+                    <li><strong>Múltiples Acciones:</strong> Monitorea todas las acciones que quieras</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('input[name="stocks"]:checked');
+    if (checkboxes.length === 0) {
+        e.preventDefault();
+        alert('Debes seleccionar al menos una acción para monitorear');
+    }
+});
+</script>
+{% endblock %}
