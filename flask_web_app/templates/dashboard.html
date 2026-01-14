@@ -33,7 +33,7 @@
 <div class="row mb-4">
     <div class="col-12">
         <a href="/" class="btn btn-outline-secondary mb-3">
-            <i class="fas fa-arrow-left"></i> Volver
+            <i class="fas fa-arrow-left"></i> Back
         </a>
         <h1 class="display-4">{{ symbol }}</h1>
     </div>
@@ -43,7 +43,7 @@
 <div class="row">
     <div class="col-md-3">
         <div class="metric-card">
-            <div class="metric-label">Precio Actual</div>
+            <div class="metric-label">Current Price</div>
             <div class="metric-value {% if latest.price_change_pct > 0 %}price-up{% elif latest.price_change_pct < 0 %}price-down{% endif %}">
                 ${{ "%.2f"|format(latest.price) }}
             </div>
@@ -51,7 +51,7 @@
     </div>
     <div class="col-md-3">
         <div class="metric-card">
-            <div class="metric-label">Cambio Diario</div>
+            <div class="metric-label">Daily Change</div>
             <div class="metric-value {% if latest.price_change_pct > 0 %}price-up{% elif latest.price_change_pct < 0 %}price-down{% endif %}">
                 {{ "%.2f"|format(latest.price_change_pct) }}%
             </div>
@@ -59,7 +59,7 @@
     </div>
     <div class="col-md-3">
         <div class="metric-card">
-            <div class="metric-label">Volumen</div>
+            <div class="metric-label">Volume</div>
             <div class="metric-value">
                 {{ "{:,}".format(latest.volume) }}
             </div>
@@ -67,7 +67,7 @@
     </div>
     <div class="col-md-3">
         <div class="metric-card">
-            <div class="metric-label">Rango</div>
+            <div class="metric-label">Range</div>
             <div class="metric-value" style="font-size: 1.2rem;">
                 ${{ "%.2f"|format(latest.low) }} - ${{ "%.2f"|format(latest.high) }}
             </div>
@@ -80,7 +80,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-chart-line"></i> Gráfico de Precio</h4>
+                <h4 class="mb-0"><i class="fas fa-chart-line"></i> Price Chart</h4>
             </div>
             <div class="card-body">
                 <canvas id="priceChart" height="100"></canvas>
@@ -93,7 +93,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header bg-info text-white">
-                <h4 class="mb-0"><i class="fas fa-newspaper"></i> Noticias Recientes</h4>
+                <h4 class="mb-0"><i class="fas fa-newspaper"></i> Recent News</h4>
             </div>
             <div class="card-body">
                 {% if news %}
@@ -111,7 +111,7 @@
                     </div>
                     {% endfor %}
                 {% else %}
-                    <p class="text-muted">No hay noticias disponibles</p>
+                    <p class="text-muted">No news available</p>
                 {% endif %}
             </div>
         </div>
@@ -136,7 +136,7 @@ $(document).ready(function() {
                     data: {
                         labels: chartData.map(d => d.date),
                         datasets: [{
-                            label: 'Precio de Cierre',
+                            label: 'Closing Price',
                             data: chartData.map(d => d.close_price),
                             borderColor: '#667eea',
                             backgroundColor: 'rgba(102, 126, 234, 0.1)',

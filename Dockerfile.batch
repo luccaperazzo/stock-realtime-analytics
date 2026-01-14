@@ -20,7 +20,7 @@ COPY .env .
 ENV PYTHONPATH=/app
 
 # Crear archivo crontab
-RUN echo "0 0 * * * cd /app && python batch/daily_aggregation.py >> /var/log/cron.log 2>&1" > /etc/cron.d/batch-cron
+RUN echo "0 0 * * * cd /app && python3 batch/daily_aggregation.py >> /var/log/cron.log 2>&1" > /etc/cron.d/batch-cron
 
 # Dar permisos al crontab
 RUN chmod 0644 /etc/cron.d/batch-cron

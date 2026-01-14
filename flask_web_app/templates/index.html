@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio - Stock Market{% endblock %}
+{% block title %}Home - Stock Market{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <h1 class="display-4"><i class="fas fa-chart-line"></i> Precios en Tiempo Real</h1>
-        <p class="lead">Monitoreo de acciones en tiempo real con alertas automáticas</p>
+        <h1 class="display-4"><i class="fas fa-chart-line"></i> Real-Time Prices</h1>
+        <p class="lead">Real-time stock monitoring with automated alerts</p>
         <hr>
     </div>
 </div>
@@ -48,7 +48,7 @@
                 
                 <div class="mt-3">
                     <a href="/dashboard/{{ stock.symbol }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-chart-area"></i> Ver Dashboard
+                        <i class="fas fa-chart-area"></i> View Dashboard
                     </a>
                 </div>
             </div>
@@ -59,7 +59,7 @@
 
 {% if not stocks %}
 <div class="alert alert-warning text-center">
-    <i class="fas fa-exclamation-triangle"></i> No hay datos disponibles en este momento.
+    <i class="fas fa-exclamation-triangle"></i> No data available at this time.
 </div>
 {% endif %}
 
@@ -67,10 +67,10 @@
     <div class="col-12 text-center">
         <div class="card">
             <div class="card-body">
-                <h3><i class="fas fa-bell"></i> ¿Quieres recibir alertas?</h3>
-                <p>Regístrate para recibir notificaciones cuando tus acciones favoritas cambien significativamente</p>
+                <h3><i class="fas fa-bell"></i> Want to receive alerts?</h3>
+                <p>Register to get notifications when your favorite stocks change significantly</p>
                 <a href="/register" class="btn btn-primary btn-lg">
-                    <i class="fas fa-user-plus"></i> Registrarse Ahora
+                    <i class="fas fa-user-plus"></i> Register Now
                 </a>
             </div>
         </div>

@@ -123,9 +123,9 @@ def register():
             
             users_collection = mongo_db[Config.MONGO_COLLECTION_USERS]
             
-            # Verificar si ya existe
+            # Check if already exists
             if users_collection.find_one({'email': data['email']}):
-                flash('El email ya está registrado', 'error')
+                flash('Email is already registered', 'error')
                 return redirect(url_for('register'))
             
             # Crear usuario
@@ -141,14 +141,14 @@ def register():
             
             users_collection.insert_one(user)
             
-            flash('Registro exitoso! Ya puedes recibir alertas.', 'success')
-            logger.info(f"Nuevo usuario registrado: {user['email']}")
+            flash('Registration successful! You can now receive alerts.', 'success')
+            logger.info(f"New user registered: {user['email']}")
             
             return redirect(url_for('index'))
             
         except Exception as e:
-            logger.error(f"Error en registro: {e}")
-            flash(f'Error en el registro: {str(e)}', 'error')
+            logger.error(f"Registration error: {e}")
+            flash(f'Registration error: {str(e)}', 'error')
             return redirect(url_for('register'))
     
     return render_template('register.html', stocks=Config.STOCKS_TO_MONITOR)
@@ -220,15 +220,15 @@ def get_all_news():
 
 @app.errorhandler(404)
 def not_found(error):
-    """Página de error 404"""
-    return render_template('error.html', error='Página no encontrada'), 404
+    """404 error page"""
+    return render_template('error.html', error='Page not found'), 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    """Página de error 500"""
+    """500 error page"""
     logger.error(f"Error 500: {error}")
-    return render_template('error.html', error='Error interno del servidor'), 500
+    return render_template('error.html', error='Internal server error'), 500
 
 
 if __name__ == '__main__':

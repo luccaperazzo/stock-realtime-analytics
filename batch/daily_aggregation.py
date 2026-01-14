@@ -38,7 +38,7 @@ class DailyAggregation:
         """
         Obtiene todos los datos del día anterior para una acción
         
-        Args:
+        Args: 
             symbol: Símbolo de la acción
         
         Returns:

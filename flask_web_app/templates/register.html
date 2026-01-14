@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Registro - Stock Market{% endblock %}
+{% block title %}Register - Stock Market{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         <div class="card shadow">
             <div class="card-header bg-primary text-white">
-                <h3 class="mb-0"><i class="fas fa-user-plus"></i> Registro de Usuario</h3>
+                <h3 class="mb-0"><i class="fas fa-user-plus"></i> User Registration</h3>
             </div>
             <div class="card-body p-4">
                 <form method="POST" action="/register" id="registerForm">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Nombre Completo *</label>
+                        <label for="name" class="form-label">Full Name *</label>
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
                     
@@ -20,12 +20,12 @@
                         <label for="email" class="form-label">Email *</label>
                         <input type="email" class="form-control" id="email" name="email" required>
                         <small class="form-text text-muted">
-                            Recibirás las alertas en este correo
+                            You will receive alerts at this email
                         </small>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Acciones a Monitorear *</label>
+                        <label class="form-label">Stocks to Monitor *</label>
                         <div class="row">
                             {% for stock in stocks %}
                             <div class="col-6 col-md-4">
@@ -40,18 +40,18 @@
                             {% endfor %}
                         </div>
                         <small class="form-text text-muted">
-                            Selecciona al menos una acción
+                            Select at least one stock
                         </small>
                     </div>
                     
                     <div class="mb-3">
                         <label for="threshold" class="form-label">
-                            Umbral de Alerta (%)
+                            Alert Threshold (%)
                         </label>
                         <input type="number" class="form-control" id="threshold" name="threshold" 
                                value="5.0" step="0.1" min="0.1" max="50">
                         <small class="form-text text-muted">
-                            Recibirás alertas cuando el precio cambie más de este porcentaje
+                            You will receive alerts when the price changes more than this percentage
                         </small>
                     </div>
                     
@@ -60,17 +60,17 @@
                             <input class="form-check-input" type="checkbox" 
                                    id="news_summary" name="news_summary" checked>
                             <label class="form-check-label" for="news_summary">
-                                Recibir resumen diario de noticias
+                                Receive daily news summary
                             </label>
                         </div>
                     </div>
                     
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-check"></i> Registrarse
+                            <i class="fas fa-check"></i> Register
                         </button>
                         <a href="/" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Volver
+                            <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>
                 </form>
@@ -79,12 +79,12 @@
         
         <div class="card mt-4">
             <div class="card-body">
-                <h5><i class="fas fa-info-circle"></i> Características</h5>
+                <h5><i class="fas fa-info-circle"></i> Features</h5>
                 <ul>
-                    <li><strong>Alertas en Tiempo Real:</strong> Recibe emails cuando tus acciones cambien significativamente</li>
-                    <li><strong>Resumen Diario:</strong> Noticias relevantes de tus acciones favoritas</li>
-                    <li><strong>Umbrales Personalizables:</strong> Configura cuándo quieres ser notificado</li>
-                    <li><strong>Múltiples Acciones:</strong> Monitorea todas las acciones que quieras</li>
+                    <li><strong>Real-Time Alerts:</strong> Receive emails when your stocks change significantly</li>
+                    <li><strong>Daily Summary:</strong> Relevant news about your favorite stocks</li>
+                    <li><strong>Customizable Thresholds:</strong> Configure when you want to be notified</li>
+                    <li><strong>Multiple Stocks:</strong> Monitor as many stocks as you want</li>
                 </ul>
             </div>
         </div>
@@ -98,7 +98,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     const checkboxes = document.querySelectorAll('input[name="stocks"]:checked');
     if (checkboxes.length === 0) {
         e.preventDefault();
-        alert('Debes seleccionar al menos una acción para monitorear');
+        alert('You must select at least one stock to monitor');
     }
 });
 </script>
