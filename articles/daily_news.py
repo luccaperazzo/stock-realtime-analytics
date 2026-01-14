@@ -1,7 +1,4 @@
-"""
-Daily News - Script principal para scraper y envío de emails
-Se ejecuta una vez al día via cron
-"""
+
 from articles.news_scraper import NewsScraperService
 from articles.email_sender import NewsEmailService
 from config.config import Config
@@ -11,7 +8,7 @@ logger = setup_logger('daily_news')
 
 
 def main():
-    """Ejecuta el proceso completo de noticias diarias"""
+    
     try:
         logger.info("=== Iniciando proceso de noticias diarias ===")
         
