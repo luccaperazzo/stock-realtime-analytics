@@ -19,14 +19,7 @@ class AlertService:
         self.alerts_collection = self.db[Config.MONGO_COLLECTION_ALERTS]
         logger.info("Alert service iniciado")
     
-    def get_users_for_stock(self, symbol):
- 
-        users = self.users_collection.find({
-            'subscribed_stocks': symbol,
-            'alerts_enabled': True
-        })
-        
-        return list(users)
+
     
     def send_email(self, to_email, subject, body):
 
@@ -156,38 +149,29 @@ class AlertService:
         else:
             logger.info(f"Procesando alerta de volumen para {symbol}: {alert_reason}")
         
-        # Obtener usuarios suscritos
-        users = self.get_users_for_stock(symbol)
+        # (La lista de usuarios ya la evalúa el consumer y aporta `matched_users`.)
         
-        if not users:
-            logger.warning(f"No hay usuarios suscritos a {symbol}")
+        # Enviar solo a `matched_users` (producido por el consumer). Si no hay matched users, no enviar.
+        matched = alert_data.get('matched_users')
+        if not matched:
+            logger.info(f"Alerta para {symbol} no enviada: no hay usuarios que cumplan umbral")
             return
-        
-        # Enviar alerta a cada usuario
-        for user in users:
-            # Para alertas de precio, verificar umbral personalizado del usuario
-            if alert_type == 'price_change':
-                user_threshold = user.get('alert_threshold', Config.PRICE_CHANGE_THRESHOLD)
-                price_change = alert_data.get('price_change_pct', 0)
-                
-                if abs(price_change) < user_threshold:
-                    continue  # Saltar si no cumple umbral del usuario
-                
-                subject = f"🔔 Alerta {symbol}: {price_change:+.2f}%"
-            else:
-                # Alerta de volumen
-                subject = f"📊 Alerta de Volumen {symbol}"
-            
-            body = self.create_alert_email(symbol, alert_data)
-            
-            if self.send_email(user['email'], subject, body):
-                # Registrar alerta enviada
+
+        body = self.create_alert_email(symbol, alert_data)
+        if alert_type == 'price_change':
+            price_change = alert_data.get('price_change_pct', 0)
+            subject = f"🔔 Alerta {symbol}: {price_change:+.2f}%"
+        else:
+            subject = f"📊 Alerta de Volumen {symbol}"
+
+        for email in matched:
+            if self.send_email(email, subject, body):
                 self.alerts_collection.update_one(
                     {'_id': alert_data['_id']},
                     {
                         '$push': {
                             'notifications_sent': {
-                                'email': user['email'],
+                                'email': email,
                                 'sent_at': datetime.now()
                             }
                         }

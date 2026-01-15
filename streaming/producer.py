@@ -63,9 +63,7 @@ class StockProducer:
                 'volume': int(quote.get('06. volume', 0)),
                 'open': float(quote.get('02. open', 0)),
                 'high': float(quote.get('03. high', 0)),
-                'low': float(quote.get('04. low', 0)),
-                'market_cap': 0,  # Alpha Vantage no provee esto en GLOBAL_QUOTE
-                'pe_ratio': 0
+                'low': float(quote.get('04. low', 0))
             }
             
             logger.info(f"Datos de Alpha Vantage para {symbol}: ${data['price']:.2f}")

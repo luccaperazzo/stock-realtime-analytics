@@ -68,16 +68,39 @@ class StockStreamConsumer:
             alert_type = None
             alert_reason = ""
             
-            # 1. Verificar cambio de precio
+            # 1. Verificar cambio de precio usando umbral por usuario
             price_change = abs(data.get('price_change_pct', 0))
-            if price_change >= Config.PRICE_CHANGE_THRESHOLD:
+
+            # Buscar usuarios suscritos y evaluar sus umbrales personalizados
+            matched_users = []
+            try:
+                users_cursor = self.db[Config.MONGO_COLLECTION_USERS].find({
+                    'subscribed_stocks': data['symbol'],
+                    'alerts_enabled': True
+                })
+
+                for user in users_cursor:
+                    user_threshold = user.get('alert_threshold', Config.PRICE_CHANGE_THRESHOLD)
+                    if user_threshold is None:
+                        user_threshold = Config.PRICE_CHANGE_THRESHOLD
+
+                    if price_change >= float(user_threshold):
+                        matched_users.append(user.get('email') or str(user.get('_id')))
+            except Exception:
+                # Si hay error consultando usuarios, volver al comportamiento por defecto
+                matched_users = []
+
+            if matched_users:
                 alert_triggered = True
                 alert_type = 'price_change'
-                alert_reason = f"Cambio de {data.get('price_change_pct', 0):.2f}% supera umbral de {Config.PRICE_CHANGE_THRESHOLD}%"
+                alert_reason = (
+                    f"Cambio de {data.get('price_change_pct', 0):.2f}% supera umbral de usuario(s): "
+                    f"{len(matched_users)} encontrado(s)"
+                )
             
-            # 2. Verificar volumen anormalmente alto
+            # 2. Verificar volumen anormalmente alto (solo si no se disparó alerta de precio)
             current_volume = data.get('volume', 0)
-            if current_volume > 0:
+            if not alert_triggered and current_volume > 0:
                 # Calcular volumen promedio de los últimos 20 registros del mismo símbolo
                 avg_volume_docs = list(self.collection.find(
                     {'symbol': data['symbol']},
@@ -86,11 +109,29 @@ class StockStreamConsumer:
                 
                 if len(avg_volume_docs) >= 5:  # Al menos 5 registros históricos
                     avg_volume = sum(doc.get('volume', 0) for doc in avg_volume_docs) / len(avg_volume_docs)
-                    volume_threshold = avg_volume * Config.VOLUME_THRESHOLD_MULTIPLIER
-                    
-                    if current_volume >= volume_threshold:
+                    default_volume_threshold = avg_volume * Config.VOLUME_THRESHOLD_MULTIPLIER
+
+                    # Usar solo el umbral global por defecto; si se supera, notificar
+                    # a usuarios suscritos que no hayan desactivado alertas de volumen.
+                    volume_matched = []
+                    if current_volume >= default_volume_threshold:
+                        try:
+                            users_cursor = self.db[Config.MONGO_COLLECTION_USERS].find({
+                                'subscribed_stocks': data['symbol'],
+                                'alerts_enabled': True
+                            })
+
+                            for user in users_cursor:
+                                if user.get('volume_alerts_enabled') is False:
+                                    continue
+                                volume_matched.append(user.get('email') or str(user.get('_id')))
+                        except Exception:
+                            volume_matched = []
+
+                    if volume_matched:
                         alert_triggered = True
                         alert_type = 'high_volume'
+                        matched_users = volume_matched
                         alert_reason = f"Volumen {current_volume:,} es {current_volume/avg_volume:.1f}x el promedio ({avg_volume:,.0f})"
             
             # Crear alerta si se cumplió alguna condición
@@ -112,17 +153,21 @@ class StockStreamConsumer:
                     alert_data = data.copy()
                     alert_data['alert_type'] = alert_type
                     alert_data['alert_reason'] = alert_reason
-                    alert_data['threshold_met'] = Config.PRICE_CHANGE_THRESHOLD if alert_type == 'price_change' else Config.VOLUME_THRESHOLD_MULTIPLIER
+                    # Si es alerta de precio, guardamos los usuarios que cumplen el umbral
+                    if alert_type == 'price_change':
+                        alert_data['matched_users'] = matched_users
+                    else:
+                        alert_data['matched_users'] = volume_matched
+
                     alert_data['created_at'] = datetime.now().isoformat()
                     alert_data['price_rounded'] = price_rounded
                     alert_data['change_rounded'] = change_rounded
                     alert_data['volume_rounded'] = volume_rounded
-                    
+
                     self.alerts_collection.insert_one(alert_data)
-                    
+
                     logger.warning(
                         f"🔔 ALERTA - {data['symbol']}: {alert_reason}"
-                        f"supera umbral de {Config.PRICE_CHANGE_THRESHOLD}%"
                     )
             
         except Exception as e:
