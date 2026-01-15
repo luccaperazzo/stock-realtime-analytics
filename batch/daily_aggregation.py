@@ -54,7 +54,7 @@ class DailyAggregation:
             return None
         
         df = pd.DataFrame(data)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
         
         logger.info(f"Obtenidos {len(df)} registros para {symbol}")
         return df
@@ -81,26 +81,81 @@ class DailyAggregation:
         return metrics
     
     def calculate_technical_indicators(self, df, window=20):
-        
         indicators = {}
-        
-        # SMA - Simple Moving Average
-        if len(df) >= window:
-            indicators['sma_20'] = df['price'].rolling(window=window).mean().iloc[-1]
+
+        # Usar cierres diarios históricos para indicadores
+        try:
+            symbol = df['symbol'].iloc[0] if 'symbol' in df.columns and not df.empty else None
+        except Exception:
+            symbol = None
+
+        # Fecha límite (día del dataframe)
+        try:
+            last_date = pd.to_datetime(df['timestamp'].iloc[-1]).date()
+        except Exception:
+            last_date = None
+
+        # SMA 20 días: requerimos exactamente 20 cierres; si faltan, dejamos None
+        if symbol and last_date:
+            closes_20 = self.get_last_n_daily_closes(symbol, 20, last_date)
+            if len(closes_20) == 20:
+                indicators['sma_20'] = float(np.mean(closes_20))
+            else:
+                indicators['sma_20'] = None
         else:
             indicators['sma_20'] = None
-        
-        # RSI - Relative Strength Index
-        if len(df) >= 14:
-            delta = df['price'].diff()
-            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-            rs = gain / loss
-            indicators['rsi'] = (100 - (100 / (1 + rs))).iloc[-1]
+
+        # RSI de 14 días: calcular sobre los 14 cierres diarios; dejar None si hay menos
+        if symbol and last_date:
+            closes_14 = self.get_last_n_daily_closes(symbol, 14, last_date)
+            if len(closes_14) == 14:
+                closes_series = pd.Series(closes_14).astype(float)
+                delta = closes_series.diff()
+                gain = delta.where(delta > 0, 0).mean()
+                loss = -delta.where(delta < 0, 0).mean()
+                if loss == 0:
+                    indicators['rsi'] = 100.0 if gain > 0 else 50.0
+                else:
+                    rs = gain / loss
+                    indicators['rsi'] = float(100 - (100 / (1 + rs)))
+            else:
+                indicators['rsi'] = None
         else:
             indicators['rsi'] = None
-        
+
         return indicators
+
+    def get_last_n_daily_closes(self, symbol, n, upto_date):
+        """Return last `n` daily close prices for `symbol` up to `upto_date` (inclusive).
+
+        Returns a list ordered from oldest to newest. If fewer than `n` days
+        are available, returns the available closes (length < n).
+        """
+        try:
+            end_of_day = datetime(upto_date.year, upto_date.month, upto_date.day, 23, 59, 59, 999999)
+
+            pipeline = [
+                { '$match': { 'symbol': symbol } },
+                { '$addFields': { 'ts': { '$dateFromString': { 'dateString': '$timestamp' } } } },
+                { '$match': { 'ts': { '$lte': end_of_day } } },
+                { '$sort': { 'ts': 1 } },
+                { '$group': {
+                    '_id': { '$dateToString': { 'format': '%Y-%m-%d', 'date': '$ts' } },
+                    'close_price': { '$last': '$price' },
+                    'ts': { '$last': '$ts' }
+                } },
+                { '$sort': { '_id': -1 } },
+                { '$limit': n }
+            ]
+
+            result = list(self.realtime_collection.aggregate(pipeline))
+            # result is sorted by date desc; reverse to get oldest->newest
+            result = list(reversed(result))
+            closes = [r.get('close_price') for r in result if r.get('close_price') is not None]
+            return closes
+        except Exception as e:
+            logger.error(f"Error obteniendo cierres diarios para {symbol}: {e}")
+            return []
     
     def save_to_mysql(self, symbol, date, metrics, indicators):
         
@@ -165,7 +220,18 @@ class DailyAggregation:
     def process_all_stocks(self):
         
         yesterday = (datetime.now() - timedelta(days=1)).date()
-        
+
+        # Borra toda la tabla daily_aggregates al inicio de la corrida
+        try:
+            delete_query = "DELETE FROM daily_aggregates"
+            self.mysql_cursor.execute(delete_query)
+            deleted = self.mysql_cursor.rowcount
+            self.mysql_conn.commit()
+            logger.info(f"Eliminados {deleted} registros existentes en MySQL (tabla daily_aggregates)")
+        except Exception as e:
+            logger.error(f"Error al borrar registros de daily_aggregates: {e}")
+            self.mysql_conn.rollback()
+
         logger.info(f"Procesando datos del {yesterday}")
         
         for symbol in Config.STOCKS_TO_MONITOR:
