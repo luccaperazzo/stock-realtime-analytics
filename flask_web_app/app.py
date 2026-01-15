@@ -194,25 +194,6 @@ def realtime_price(symbol):
         return jsonify({'success': False, 'error': str(e)})
 
 
-@app.route('/api/news')
-def get_all_news():
-    
-    try:
-        articles_collection = mongo_db[Config.MONGO_COLLECTION_ARTICLES]
-        
-        # Últimas 24 horas
-        yesterday = datetime.now() - timedelta(days=1)
-        
-        news = list(articles_collection.find(
-            {'scraped_at': {'$gte': yesterday}},
-            {'_id': 0}
-        ).sort('scraped_at', -1).limit(50))
-        
-        return jsonify({'success': True, 'data': news})
-        
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
 
 @app.errorhandler(404)
 def not_found(error):
