@@ -55,7 +55,7 @@ class NewsScraperService:
             articles = []
 
             # Buscar elementos de noticias (la estructura puede variar)
-            news_items = soup.find_all('h3', limit=10)
+            news_items = soup.find_all('h3', limit=11)
 
             for item in news_items:
                 try:
@@ -128,6 +128,12 @@ class NewsScraperService:
     def scrape_all_stocks(self):
         
         logger.info("Iniciando scraping de noticias...")
+        # Borrar artículos existentes antes de correr el scraper
+        try:
+            result = self.articles_collection.delete_many({})
+            logger.info(f"Eliminados {getattr(result, 'deleted_count', 'unknown')} artículos existentes en MongoDB antes del scraping")
+        except Exception as e:
+            logger.error(f"Error borrando artículos previos: {e}")
         
         all_articles = []
         
