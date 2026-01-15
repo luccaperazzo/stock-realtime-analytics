@@ -70,3 +70,5 @@ spark-warehouse/
 
 # Grafana provisioning (contiene contraseñas)
 grafana/provisioning/datasources/*.yml
+grafana/provisioning/dashboards/*.yml
+
