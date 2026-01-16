@@ -132,6 +132,7 @@ class DailyAggregation:
         are available, returns the available closes (length < n).
         """
         try:
+      
             end_of_day = datetime(upto_date.year, upto_date.month, upto_date.day, 23, 59, 59, 999999)
 
             pipeline = [
@@ -220,17 +221,6 @@ class DailyAggregation:
     def process_all_stocks(self):
         
         yesterday = (datetime.now() - timedelta(days=1)).date()
-
-        # Borra toda la tabla daily_aggregates al inicio de la corrida
-        try:
-            delete_query = "DELETE FROM daily_aggregates"
-            self.mysql_cursor.execute(delete_query)
-            deleted = self.mysql_cursor.rowcount
-            self.mysql_conn.commit()
-            logger.info(f"Eliminados {deleted} registros existentes en MySQL (tabla daily_aggregates)")
-        except Exception as e:
-            logger.error(f"Error al borrar registros de daily_aggregates: {e}")
-            self.mysql_conn.rollback()
 
         logger.info(f"Procesando datos del {yesterday}")
         
