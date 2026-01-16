@@ -38,11 +38,6 @@ class Config:
     }
     ES_INDEX_LOGS = 'stock-system-logs'
     
-    # AWS S3
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', '')
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '')
-    AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
-    S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME', 'stock-data-archive')
     
     # Email
     SMTP_CONFIG = {
@@ -74,9 +69,6 @@ class Config:
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     
-    # Spark
-    SPARK_APP_NAME = 'StockStreamingApp'
-    SPARK_MASTER = 'local[*]'
     
     # Timing
     PRODUCER_FETCH_INTERVAL = 10  # segundos
